@@ -16,6 +16,10 @@ def make_list(path_arg):
         'height': 2.5,
         'width': 3.5,
         'dpi': 298,
+        'gaps': {
+            'x': 10,
+            'y': 10,
+        },
         'dir': str(path.absolute()),
         'files': []
     }
