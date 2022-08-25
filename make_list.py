@@ -2,23 +2,33 @@ import json
 import sys
 from pathlib import Path
 
+from units import in_units, INCH, PIXEL
+
 
 def filter_images(paths):
     for path in paths:
-        if str(path).split('.')[1] in ('png', 'jpg'):
-            yield path
+        split_path = str(path).split('.')
+        if len(split_path) < 2:
+            continue
+
+        _, ext = split_path
+
+        if ext not in ('png', 'jpg'):
+            continue
+
+        yield path
 
 
 def make_list(path_arg):
     path = Path(path_arg)
 
     settings = {
-        'height': 2.5,
-        'width': 3.5,
+        'height': in_units(2.5, INCH),
+        'width': in_units(3.5, INCH),
         'dpi': 298,
         'gaps': {
-            'x': 10,
-            'y': 10,
+            'x': in_units(10, PIXEL),
+            'y': in_units(10, PIXEL),
         },
         'dir': str(path.absolute()),
         'files': []
