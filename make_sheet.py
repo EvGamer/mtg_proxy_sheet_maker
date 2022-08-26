@@ -6,13 +6,14 @@ from itertools import repeat, groupby
 from pathlib import Path
 from units import to_pixels
 
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ImageChops
 
 
-def repeated_files(files):
+def repeated(files):
     for file in files:
 
         yield from repeat(file, file['quantity'])
+
 
 def files(settings):
     files = settings['files']
@@ -20,7 +21,7 @@ def files(settings):
     for file_settings in files:
         path = Path(settings['dir']) / file_settings['file_name']
         with Image.open(path) as image:
-            yield {**file_settings, 'image': image}
+            yield {**file_settings, 'image': image.convert('RGBA')}
 
 
 def deenumerate(enumerated):
@@ -40,10 +41,14 @@ def make_sheet(path_arg):
     with open(path/'settings.json', 'r') as settings_file:
         settings = json.load(settings_file)
 
+
+    output_path = path/'output'
+
     try:
-        os.mkdir(path/'output')
+        os.mkdir(output_path)
     except FileExistsError:
         pass
+
 
     dpi = settings['dpi']
     card_height = to_pixels(settings['height'], dpi)
@@ -54,18 +59,37 @@ def make_sheet(path_arg):
     rows_count = 3
     columns_count = 3
 
-    sheet_width = card_width * columns_count + gap_x * (columns_count - 1)
-    sheet_height = card_height * rows_count + gap_y * (rows_count - 1)
+    def get_offset_x(card_count):
+        return (card_width + gap_x) * card_count
 
-    print(card_height, card_width, gap_x, gap_y)
+    def get_offset_y(card_count):
+        return (card_height + gap_y) * card_count
 
-    for page in batches(batches(repeated_files(files(settings)), rows_count), columns_count):
-        sheet = Image.new('RGBA', (sheet_width, sheet_height))
+    def get_width(card_count):
+        return card_width + get_offset_x(card_count - 1)
+
+    def get_height(card_count):
+        return card_height + get_offset_y(card_count - 1)
+
+    def get_size(_columns_count, _rows_count):
+        return get_width(_columns_count), get_height(_rows_count)
+
+    def rows(_files):
+        return batches(_files, columns_count)
+
+    def pages(_files):
+        return batches(rows(_files), rows_count)
+
+    for page_num, page in enumerate(pages(repeated(files(settings)))):
+        sheet_size = get_size(rows_count, columns_count)
+        sheet = Image.new('RGBA', sheet_size)
         for row_num, row in enumerate(page):
             for col_num, file in enumerate(row):
-                print(row_num, col_num, file)
+                image = file['image']
 
+                sheet.paste(image, (get_offset_x(col_num), get_offset_y(row_num)))
 
+        sheet.save(output_path/f'sheet_{page_num}.png')
 
 
 if __name__ == '__main__':

@@ -23,8 +23,8 @@ def make_list(path_arg):
     path = Path(path_arg)
 
     settings = {
-        'height': in_units(2.5, INCH),
-        'width': in_units(3.5, INCH),
+        'height': in_units(3.5, INCH),
+        'width': in_units(2.5, INCH),
         'dpi': 298,
         'gaps': {
             'x': in_units(10, PIXEL),
