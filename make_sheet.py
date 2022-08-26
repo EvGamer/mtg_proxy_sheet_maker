@@ -6,7 +6,7 @@ from itertools import repeat, groupby
 from pathlib import Path
 from units import to_pixels
 
-from PIL import Image, ImageMode
+from PIL import Image, ImageOps
 
 
 def repeated_files(files):
@@ -22,11 +22,17 @@ def files(settings):
         with Image.open(path) as image:
             yield {**file_settings, 'image': image}
 
+
+def deenumerate(enumerated):
+    for i, item in enumerated:
+        yield item
+
+
 def batches(files, amount):
     group = lambda item: floor(item[0] / amount)
 
-    for page in groupby(enumerate(files), group):
-        yield from (item[1] for item in page[1])
+    for _, page in groupby(enumerate(files), group):
+        yield deenumerate(page)
 
 def make_sheet(path_arg):
     path = Path(path_arg)
@@ -57,7 +63,7 @@ def make_sheet(path_arg):
         sheet = Image.new('RGBA', (sheet_width, sheet_height))
         for row_num, row in enumerate(page):
             for col_num, file in enumerate(row):
-                pass
+                print(row_num, col_num, file)
 
 
 
