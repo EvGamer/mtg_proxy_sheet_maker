@@ -2,3 +2,4 @@
 cards/
 
 *.pyc
+venv
