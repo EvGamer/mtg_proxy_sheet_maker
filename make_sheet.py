@@ -89,7 +89,7 @@ def make_sheet(path_arg):
 
                 sheet.paste(image, (get_offset_x(col_num), get_offset_y(row_num)))
 
-        sheet.save(output_path/f'sheet_{page_num}.png')
+        sheet.save(output_path/f'sheet_{page_num}.png', dpi=(dpi, dpi))
 
 
 if __name__ == '__main__':
